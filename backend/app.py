@@ -1,60 +1,63 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_socketio import SocketIO, emit
 from werkzeug.security import check_password_hash, generate_password_hash
 from bd import db
 from bson import ObjectId
 
 app = Flask(__name__)
-CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
-
-# Collection contenant les questions
-questions = db["Questions"]
-# Collection contenant les utilisateurs
-users = db["Users"]  # Structure (nom, prenoms, pseudo, email, password, pays)
-# Collection contenant le score des joueurs
+CORS(app, origins=['http://localhost:5173'])
+rooms = {}
+# Collection for questions
+questions = db["questions"]
+# Collection for users
+users = db["Users"]  # Structure (first_name, last_name, username, email, password, country)
+# Collection for player scores
 user_scores = db["Score"]  # Structure (user_id, score)
 
-#Route pour s'inscrire
-@app.route('/register', methods = ['POST'])
+# Route to register
+@app.route('/api/register', methods = ['POST'])
 def register():
     data = request.get_json()
-    name = data.get("username")
-    prenom = data.get("prenom")
-    pseudo = data.get("pseudo")
+    last_name = data.get("lastName")
+    first_name = data.get("firstName")
+    username = data.get("username")
     email = data.get('email')
     password = data.get('password')
-    confirmPasswor = data.get('CPassword')
     hashed_password = generate_password_hash(password)
     country = data.get('country')
-    if name and prenom and pseudo and email and password and country:
-      users.insert_one({
-          "nom":name,
-          "prenoms": prenom,
-          "pseudo": pseudo,
-          "email": email,
-          "password": hashed_password,
-          "country": country
-      })
-      return jsonify({"message":"Nouvel utilisateur enregistré avec succes"}), 200
+    if last_name and first_name and username and email and password and country:
+        users.insert_one({
+            "lastName": last_name,
+            "firstName": first_name,
+            "username": username,
+            "email": email,
+            "password": hashed_password,
+            "country": country
+        })
+        return jsonify({"message": "New user registered successfully"}), 200
     else:
-      return jsonify({"message":"Données manquantes ou mal renseignées"}), 400
+        return jsonify({"message": "Missing or incorrect data"}), 400
   
-#Route pour se connecter 
-@app.route('/login', methods=["POST"])
-def SignIN():
+# Route to login
+@app.route('/api/login', methods=["POST"])
+def signIN():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
-    exist_user = users.find_one({"email":email})
-    if exist_user and check_password_hash(exist_user["password"],password):
-        return jsonify({"message":"Bienvenue","user_id":exist_user["_id"]}), 200
-    else:
-      return jsonify({"message":"User not found"}), 400
 
-#  Route pour récupérer les questions
-@app.route('/send_questions', methods=["GET"])
+    existing_user = users.find_one({"email": email})
+
+    if existing_user and check_password_hash(existing_user["password"], password):
+        user_id = str(existing_user["_id"])
+        print(f"✅ User ID sent: {user_id}")  # Verification
+        return jsonify({"message": "Welcome", "user_id": user_id}), 200
+    else:
+        print("❌ User not found or incorrect password")
+        return jsonify({"message": "User not found"}), 400
+
+
+# Route to get the questions
+@app.route('/api/send_questions', methods=["GET"])
 def get_questions():
     question_list = []
     qcm = questions.find({"type": "multipleChoice"})
@@ -62,63 +65,44 @@ def get_questions():
         question_list.append({
             "_id": str(q["_id"]),
             "question": q["question"],
-            "options": q["options"]
+            "options": q["options"],
+            "points": q["points"]
         })
     return jsonify(question_list)
 
-# 🔹 Vérification des réponses avec WebSocket
-@socketio.on('quiz_answer')
-def handle_quiz_answer(data):
-    id = data.get("user_id")  # ID unique de l'utilisateur
-    user_id = users.find_one({"user_id": ObjectId(id)})
-    question_id = data.get("question_id")  # ID de la question
-    user_answer = data.get("answer")  # Réponse envoyée
 
-    try:
-        question = questions.find_one({"_id": ObjectId(question_id)})
-    except:
-        emit("quiz_feedback", {"user_id": user_id, "message": "ID de question invalide"}, broadcast=True)
-        return
-
+@app.route('/quiz_answer', methods=['POST'])
+def quiz_answer():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    question_id = data.get('question_id')
+    user_answer = data.get('answer')
+    print(user_id)
+    print(question_id)
+    # Retrieve the question from the database
+    question = questions.find_one({"_id": ObjectId(question_id)})
+    
     if not question:
-        emit("quiz_feedback", {"user_id": user_id, "message": "Question non trouvée"}, broadcast=True)
-        return
+        return jsonify({"message": "Question not found"}), 404
 
-    is_correct = (question["correctAnswer"] == user_answer)
+    # Check the answer
+    is_correct = question['correctAnswer'] == user_answer
 
-    # 🔹 Mettre à jour le score de l'utilisateur
-    score_record = user_scores.find_one({"user_id": ObjectId(id)})
+    # Retrieve or create a score for the user
+    score_record = user_scores.find_one({"user_id": ObjectId(user_id)})
 
     if score_record:
-        # Si l'utilisateur a déjà un score, on le met à jour
         if is_correct:
-            user_scores.update_one(
-                {"user_id": ObjectId(id)},
-                {"$inc": {"score": 1}}  # Incrémenter le score de 1
-            )
+            # Add points for the question if the answer is correct
+            user_scores.update_one({"user_id": ObjectId(user_id)}, {"$inc": {"score": question['points']}})
     else:
-        # Sinon, on crée une nouvelle entrée pour l'utilisateur avec un score initial
-        if is_correct:
-            user_scores.insert_one({
-                "user_id": ObjectId(id),
-                "score": 1  # Si la réponse est correcte, on initialise avec 1
-            })
-        else:
-            user_scores.insert_one({
-                "user_id": ObjectId(id),
-                "score": 0  # Si la réponse est incorrecte, on initialise avec 0
-            })
+        user_scores.insert_one({
+            "user_id": ObjectId(user_id),
+            "score": question['points'] if is_correct else 0
+        })
 
-    # 🔹 Récupérer le score mis à jour
-    updated_score = user_scores.find_one({"user_id": ObjectId(id)})["score"]
-
-    # 🔹 Envoyer la réponse et le score à tous les joueurs
-    emit("quiz_feedback", {
-        "user_id": user_id,
-        "is_correct": is_correct,
-        "message": "Bonne réponse !" if is_correct else "Mauvaise réponse.",
-        "score": updated_score
-    }, broadcast=True)
+    current_score = user_scores.find_one({"user_id": ObjectId(user_id)})["score"]
+    return jsonify({"isCorrect": is_correct, "score": current_score}), 200
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000)
