@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import './App.scss';
 import SignUp from './views/SignUp/SignUp';
-import Quiz from './views/SignUp/Quizz/Quizz';
+import Quiz from './Quizz/Quizz';
 import LoginPage from './views/SignIn/SignIn';
 
 function App() {

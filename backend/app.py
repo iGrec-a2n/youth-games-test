@@ -98,11 +98,39 @@ def quiz_answer():
     else:
         user_scores.insert_one({
             "user_id": ObjectId(user_id),
-            "score": question['points'] if is_correct else 0
+            "score": question['points'] if is_correct else 0,
+            "nb_battle" : 1
         })
 
     current_score = user_scores.find_one({"user_id": ObjectId(user_id)})["score"]
     return jsonify({"isCorrect": is_correct, "score": current_score}), 200
+
+@app.route('/nb_battle', methods=['POST'])
+def nb_battle():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    
+    # Find the user's score record
+    score_record = user_scores.find_one({"user_id": ObjectId(user_id)})
+    
+    if not score_record:
+        return jsonify({"message": "User not found"}), 404
+    
+    # Check if 'nb_battle' exists in the user's score record
+    if 'nb_battle' not in score_record:
+        # If not, initialize it to 1 (first battle)
+        user_scores.update_one(
+            {"user_id": ObjectId(user_id)},
+            {"$set": {"nb_battle": 1}}
+        )
+    else:
+        # If it exists, increment it by 1
+        user_scores.update_one(
+            {"user_id": ObjectId(user_id)},
+            {"$inc": {"nb_battle": 1}}
+        )
+
+    return jsonify({"message": "nb_battle updated successfully"}), 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

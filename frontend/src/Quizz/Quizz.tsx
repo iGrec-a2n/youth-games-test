@@ -53,7 +53,7 @@ const Quiz: React.FC = () => {
         setMessage("Mauvaise réponse !");
       }
 
-      setIsAnswerSubmitted(true); // Marquer que la réponse a été soumise
+      setIsAnswerSubmitted(true); 
     })
     .catch((error) => {
       console.error('Erreur lors de la soumission de la réponse:', error);
@@ -71,6 +71,15 @@ const Quiz: React.FC = () => {
     } else {
       setIsQuizFinished(true);
       setMessage('Quiz terminé !');
+      fetch('http://127.0.0.1:5000/nb_battle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id : userId
+        })})
+        .then((response) => response.json())
     }
   };
 
