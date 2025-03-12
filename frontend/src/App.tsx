@@ -1,13 +1,18 @@
 import './App.scss'
-import SignUp from './views/SignUp/SignUp'
+import GamePlay from './views/GamePlay/GamePlay'
+import GameUI from './views/GameUI/GameUI'
+// import SignUp from './views/SignUp/SignUp'
+import {Quizz} from './data/quizzData';
 
-function App() {
+const App: React.FC = () => {
 
   return (
     <div className="App">
-      <SignUp />
+      {/* <SignUp /> */}
+      <GameUI />
+      {/* <GamePlay questions={Quizz.questions}/> */}
     </div>
   )
-}
+};
 
-export default App
+export default App;

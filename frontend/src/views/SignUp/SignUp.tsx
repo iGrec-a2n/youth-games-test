@@ -11,9 +11,13 @@ const loginSchema = z.object({
   username: z.string().min(3, "Le pseudo doit avoir au moins 3 caractères"),
   email: z.string().email("Email invalide"),
   password: z.string().min(6, "Le mot de passe doit avoir au moins 6 caractères"),
+  confirmPassword: z.string().min(6, "Le mot de passe de confirmation est requis"),
   country: z.string().min(1, "Le pays est requis"),
-  birthDate: z.string().min(1, "La date de naissance est requise"),
-});
+  birthDate: z.string().min(1, "La date de naissance est requise").refine((val) => !isNaN(Date.parse(val)), "Date invalide"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Les mots de passe ne correspondent pas",
+  path: ["confirmPassword"],
+});;
 
 // Définition du type des données du formulaire
 type LoginFormInputs = z.infer<typeof loginSchema>;
@@ -27,14 +31,9 @@ const LoginPage: React.FC = () => {
     resolver: zodResolver(loginSchema),
   });
 
-  // const onSubmit = (data: LoginFormInputs) => {
-  //   console.log("Données du formulaire :", data);
-  // };
-
-
 const onSubmit = async (data: LoginFormInputs) => {
   try {
-    const response = await axios.post("http://127.0.0.1:5000/api/login", data, {
+    const response = await axios.post("http://127.0.0.1:5000/api/signup", data, {
       headers: { "Content-Type": "application/json" },
     });
 
@@ -42,14 +41,18 @@ const onSubmit = async (data: LoginFormInputs) => {
     alert(response.data.message); // Affichage d'un message
   } catch (error) {
     console.error("Erreur lors de la connexion :", error);
-    alert("Erreur de connexion !");
+    if (axios.isAxiosError(error)) {
+      alert(error.response?.data.message || "Une erreur est survenue !");
+    } else {
+      alert("Erreur de connexion !");
+    }
   }
 };
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-6 rounded-lg shadow-lg w-96">
-        <h2 className="text-2xl font-semibold text-center mb-4">Connexion</h2>
+        <h2 className="text-2xl font-semibold text-center mb-4">Sign Up</h2>
         
         <label className="block">Nom :</label>
         <input {...register("lastName")} className="w-full p-2 border rounded mb-2" />
@@ -70,6 +73,10 @@ const onSubmit = async (data: LoginFormInputs) => {
         <label className="block">Mot de passe :</label>
         <input type="password" {...register("password")} className="w-full p-2 border rounded mb-2" />
         {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
+
+        <label className="block">Confirmer le Mot de passe :</label>
+        <input type="password" {...register("confirmPassword")} className="w-full p-2 border rounded mb-2" />
+        {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>}
 
         <label className="block">Pays :</label>
         <input {...register("country")} className="w-full p-2 border rounded mb-2" />
