@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { resultInitialState } from "../../data/quizzData"; // Assure-toi du bon chemin d'import
 import AnswerTimer from '../../components/AnswerTimer/AnswerTimer';
-import './GamePlay.scss'
+import socket from "../../utils/socket";
 
-import socket from "../utils/socket";
+import './GamePlay.scss'
 
 
 interface Question {
@@ -23,7 +23,9 @@ interface Result {
   wrongAnswers: number;
 }
 
+
 const GamePlay: React.FC<GameProps> = ({ questions }) => {
+  
   const [currentQuestion, setCurrentQuestion] = useState<number>(0);
   const { question, choices, correctAnswer, type } = questions[currentQuestion];
   const [answerIdx, setAnswerIdx] = useState<number | null>(null);
@@ -32,8 +34,28 @@ const GamePlay: React.FC<GameProps> = ({ questions }) => {
   const [showResult, setShowResult] = useState<boolean>(false);
   const [showAnswerTimer, setShowAnswerTimer] = useState<boolean>(true);
   const [inputAnswer, setInputAnswer] = useState<string>('');
+  const [players, setPlayers] = useState<string[]>([]);
+  const [scores, setScores] = useState<{ [key: string]: number }>({});
 
-
+  const room = "room1"; // ID de la salle (modifiable)
+  const username = "Player" + Math.floor(Math.random() * 1000); // Générer un pseudo aléatoire
+  
+  useEffect(() => {
+    socket.emit("join_game", { room, username });
+  
+    socket.on("player_joined", (data) => {
+      setPlayers(data.players);
+    });
+  
+    socket.on("update_scores", (data) => {
+      setScores(data.players);
+    });
+  
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+  
   const onAnswerClick = (choice: string, index: number) => {
     setAnswerIdx(index);
     setAnswer(choice === correctAnswer);
