@@ -90,7 +90,7 @@ const Quiz: React.FC = () => {
       <h1>Quiz Multijoueur</h1>
       {currentQuestion ? (
         <div>
-          <h2>{currentQuestion.question}</h2>
+          <h2>{currentQuestion.question} - Nombre de points : {currentQuestion.points}</h2>
           <form onSubmit={handleSubmitAnswer}>
             {currentQuestion.options &&
               currentQuestion.options.map((option: string, index: number) => (
@@ -98,7 +98,7 @@ const Quiz: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleOptionClick(option)}
-                    disabled={isAnswerSubmitted} // Désactiver après soumission
+                    disabled={isAnswerSubmitted}
                   >
                     {option}
                   </button>

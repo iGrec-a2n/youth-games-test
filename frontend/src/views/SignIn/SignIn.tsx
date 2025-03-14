@@ -25,7 +25,7 @@ const LoginPage: React.FC = () => {
         console.log("✅ User ID enregistré:", data.user_id);
 
         // Rediriger vers la page du quiz
-        window.location.href = '/quiz';
+        window.location.href = '/join';
       } else {
         setMessage(data.message || "Identifiants incorrects.");
       }

@@ -1,16 +1,17 @@
 from pymongo import MongoClient
-import requests
+# import requests
+
 # server = "34.251.25.31" # or localhost
 # username = "ortecusdb"
 # password = "passdb*2019#"
 # port = 27017
 
 # if server == 'localhost':
+#     client = MongoClient("mongodb://localhost", username=username,password=password, port=port)
 # else:
 #     client = MongoClient(server, username=username,password=password, port=port)
-
-client = MongoClient("mongodb://localhost:27017")
 # creation DB
+client = MongoClient("localhost:27017")
 db = client["HACKATON"]
 
 # creation collection
