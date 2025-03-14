@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
 import "./Home.scss"
+import Background from "../../components/Background/Background";
 
 const Home:React.FC= () => {
   const navigate = useNavigate();
@@ -9,7 +10,9 @@ const Home:React.FC= () => {
   }
 
   return (
-    <section className="background">
+    <section>
+      <Background />
+      <div className="background">
       <h1>
         <span className="title">
           Be part of
@@ -25,7 +28,7 @@ const Home:React.FC= () => {
         <button className="button-wide cta-orange" onClick={handleNavigate}>Find a game</button>
         <button className="button-wide " onClick={handleNavigate}>Discover</button>
       </div>
-        
+      </div>
     </section>
   )
 
