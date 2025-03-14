@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
 
 const onSubmit = async (data: LoginFormInputs) => {
   try {
-    const response = await axios.post("http://127.0.0.1:5000/api/login", data, {
+    const response = await axios.post("http://127.0.0.1:5000/api/register", data, {
       headers: { "Content-Type": "application/json" },
     });
 
