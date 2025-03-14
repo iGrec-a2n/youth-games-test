@@ -1,0 +1,74 @@
+@import "../../../styles/varibales.scss";
+
+.background {
+  background: $ghost-white;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  color: $russian-violet;
+
+  h1 {
+    transform: translate(2rem, -6rem);
+    display: flex;
+    flex-direction: column;
+    max-width: 60%;
+    // gap: .4rem;
+
+    &::after {
+      content: "";
+      height: 2px;
+      width: 15%;
+      background: $russian-violet;
+    }
+    .title {
+      font-family: 'Noto sans';
+      font-size: 1.2rem;
+      font-weight: 200;
+      margin: 0;
+    }
+    
+    .title-description {
+      font-weight: 500;
+    }
+    
+    .title-large {
+      font-family: 'Syncopate';
+      font-weight: 800;
+    }
+  }
+
+
+  .button-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .8rem;
+    .button-wide {
+      outline: none;
+      border: 1px solid $russian-violet-2;
+      border-radius: 16px;
+      background: none;
+      min-width: 10rem;
+      padding: 10px 40px;
+      font-size: 1rem;
+      transition: all .3s ease;
+
+      &:hover {
+        background: $russian-violet;
+        color: $lavender-web;
+      }
+    }
+    
+    .cta-orange {
+      background: $citrine;
+      border: none;
+
+      &:hover{
+        background: $jonquil;
+        color: $lavender-web;
+      }
+    }
+  }
+}

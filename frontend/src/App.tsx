@@ -3,6 +3,7 @@ import './App.scss';
 import SignUp from './views/SignUp/SignUp';
 import Quiz from './Quizz/Quizz';
 import LoginPage from './views/SignIn/SignIn';
+import Home from './views/Home/Home';
 
 function App() {
   return (
@@ -19,7 +20,7 @@ function App() {
           <Route path="/quiz" element={<Quiz />} />
 
           {/* Page d'accueil ou route par défaut */}
-          <Route path="/" element={<h1>Bienvenue sur la page d'accueil</h1>} />
+          <Route path="/" element={<Home />} />
         </Routes>
       </Router>
     </div>
