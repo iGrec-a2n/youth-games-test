@@ -1,4 +1,3 @@
-import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import socket from "../../socket"; 
 
@@ -10,10 +9,11 @@ type PlayerType = {
 };
 
 const AdminRoom = () => {
-  const { roomCode } = useParams();
+  const  roomCode  = "VGQZCN";
   const [playersCount, setPlayersCount] = useState(0);  // Nombre de joueurs
   const [playersList, setPlayersList] = useState<PlayerType[]>([]);  // Liste des joueurs
   const [quizStarted, setQuizStarted] = useState(false);
+  const [isFinished, setIsFinished] = useState(false); // 🔥 État pour la fin du quiz
 
   useEffect(() => {
     // Réception de l'événement 'broadcast_message' 
@@ -35,6 +35,10 @@ const AdminRoom = () => {
     socket.emit("start_quiz", { room_code: roomCode });
     setQuizStarted(true);
   };
+  const endQuiz = () => {
+    socket.emit("end_room", { room_code: roomCode });
+    setIsFinished(true);
+  };
 
   return (
     <div>
@@ -50,7 +54,10 @@ const AdminRoom = () => {
       {!quizStarted ? (
         <button onClick={startQuiz}>Démarrer le quiz</button>
       ) : (
+        <>
         <h3>Quiz en cours...</h3>
+        <button onClick={endQuiz}>End quizz</button>
+        </>
       )}
     </div>
   );

@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import './App.scss';
 import SignUp from './views/SignUp/SignUp';
 import LoginPage from './views/SignIn/SignIn';
@@ -16,10 +15,10 @@ function App() {
         <Routes>
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/quiz/:roomCode" element={<Quiz />} />
+          <Route path="/quiz/" element={<Quiz />} />
           <Route path="/join" element={<JoinRoom />} />
           <Route path="/results/:roomCode" element={<Results />} />
-          <Route path="/:roomCode" element={<AdminRoom />} />
+          <Route path="/" element={<AdminRoom />} />
           <Route path="/ad" element={<AdminPage />} />
 
         </Routes>

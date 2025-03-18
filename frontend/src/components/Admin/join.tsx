@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import socket from "../../socket";
 
 const JoinRoom: React.FC = () => {
-  const [roomCode, setRoomCode] = useState("");
+  const roomCode = "VGQZCN";
   const [username, setUsername] = useState("");
   const navigate = useNavigate(); 
   const [players, setPlayers] = useState<string[]>([]);
@@ -12,7 +12,7 @@ const JoinRoom: React.FC = () => {
     socket.emit("join_room", { room_code: roomCode, username, user_id });
     localStorage.setItem('username',username);
     socket.on("player_joined", () => {
-      navigate(`/quiz/${roomCode}`); 
+      navigate(`/quiz`); 
     });
     socket.on("error", (data: { message: string }) => {
       alert(data.message);
@@ -35,7 +35,6 @@ const JoinRoom: React.FC = () => {
   return (
     <div>
       <h2>Rejoindre une salle {user_id}</h2>
-      <input type="text" placeholder="Code de la salle" onChange={(e) => setRoomCode(e.target.value)} />
       <input type="text" placeholder="Nom" onChange={(e) => setUsername(e.target.value)} />
       <button onClick={joinRoom}>Rejoindre</button>
     </div>
