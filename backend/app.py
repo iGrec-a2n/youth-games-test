@@ -148,8 +148,9 @@ def handle_join_room(data):
     # Ajouter le joueur à la liste des joueurs dans la room
     player = {
         "username": username,
-        "user_id": user_id,  # Laisser sous forme de string
-        "joined_at": time.time()  # Date et heure d'entrée
+        "user_id": user_id, 
+        "joined_at": time.time(), # Date et heure d'entrée 'pas encore convertie'
+        "score": 0
     }
 
     # Mettre à jour la collection 'rooms' pour ajouter ce joueur à la room

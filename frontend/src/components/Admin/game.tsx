@@ -29,6 +29,7 @@ const Quiz = () => {
 
     socket.on("player_joined", (data) => {
       alert(`Bienvenue ${data.username}, vous avez rejoint la salle !`);
+      const player_joined =  localStorage.getItem("username");
       setPlayer(data.username);
     });
     socket.on("player_list", (data) => {

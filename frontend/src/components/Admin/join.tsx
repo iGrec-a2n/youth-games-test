@@ -10,7 +10,7 @@ const JoinRoom: React.FC = () => {
   const user_id = localStorage.getItem("user_id");
   const joinRoom = () => {
     socket.emit("join_room", { room_code: roomCode, username, user_id });
-
+    localStorage.setItem('username',username);
     socket.on("player_joined", () => {
       navigate(`/quiz/${roomCode}`); 
     });
