@@ -247,6 +247,9 @@ def anecdotes():
     else:
         return jsonify({"message": "Aucune anecdote trouvée"}), 404
 
+@app.route('/api/actualite', methods=['GET'])
+def actualite():
+    return "voici toute l'actualite"
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
