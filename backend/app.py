@@ -12,64 +12,14 @@ import time
 eventlet.monkey_patch()
 
 app = Flask(__name__)
-CORS(app, origins=['http://localhost:5173'])
-socketio = SocketIO(app, cors_allowed_origins="*", engineio_logger=True, async_mode='eventlet')
 
-# Collection pour les rooms
-rooms = db["rooms"]
+# Importer la connection
+from mongo_socket import *
 
-# Collection pour les utilisateurs
-users = db["Users"]
 
-# Collection pour les scores des joueurs
-user_scores = db["Score"]
+#login
+from login import *
 
-# Nb de participants à une room
-room_players = {}
-
-# 📌 Générer un code aléatoire pour une room
-def generate_room_code():
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-
-# Route pour enregistrer un nouvel utilisateur
-@app.route('/api/register', methods=['POST'])
-def register():
-    data = request.get_json()
-    last_name = data.get("lastName")
-    first_name = data.get("firstName")
-    username = data.get("username")
-    email = data.get('email')
-    password = data.get('password')
-    hashed_password = generate_password_hash(password)
-    country = data.get('country')
-
-    if last_name and first_name and username and email and password and country:
-        users.insert_one({
-            "lastName": last_name,
-            "firstName": first_name,
-            "username": username,
-            "email": email,
-            "password": hashed_password,
-            "country": country
-        })
-        return jsonify({"message": "New user registered successfully"}), 200
-    else:
-        return jsonify({"message": "Missing or incorrect data"}), 400
-
-# Route pour connecter un utilisateur
-@app.route('/api/login', methods=["POST"])
-def signIN():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-
-    existing_user = users.find_one({"email": email})
-
-    if existing_user and check_password_hash(existing_user["password"], password):
-        user_id = str(existing_user["_id"])
-        return jsonify({"message": "Welcome", "user_id": user_id}), 200
-    else:
-        return jsonify({"message": "User not found"}), 400
 
 # Route pour créer une room avec des questions
 @app.route('/api/create_room', methods=["POST"])
