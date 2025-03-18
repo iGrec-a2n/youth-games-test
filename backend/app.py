@@ -1,3 +1,6 @@
+import eventlet
+eventlet.monkey_patch()  # ✅ Avant toute autre importation
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO, join_room, leave_room, emit
@@ -6,10 +9,8 @@ from bd import db
 from bson import ObjectId
 import random
 import string
-import eventlet
 import time
-# For WebSocket connections to work well in local mode
-eventlet.monkey_patch()
+
 
 app = Flask(__name__)
 CORS(app, origins=['http://localhost:5173'])
@@ -20,6 +21,9 @@ rooms = db["rooms"]
 
 # Collection pour les utilisateurs
 users = db["Users"]
+
+# Collection pour les annecdotes
+Anedocte = db["Anedocte"]
 
 # Collection pour les scores des joueurs
 user_scores = db["Score"]
@@ -218,6 +222,31 @@ def handle_start_quiz(data):
 
     print(f"Le quiz pour la room {room_code} a commencé. Statut mis à jour en 'in progress'.")
 #IL reste à gérer la logique de récupération des réponses des participants, les traiter, et envoyer le résultat à la fin
+
+
+
+# La partie Le saviez vous
+from pymongo import MongoClient
+
+collection = db["Anedocte"]
+@app.route('/api/anecdotes', methods=['GET'])
+def anecdotes():
+    result = collection.aggregate([{"$sample": {"size": 1}}])
+
+    # Convertir le curseur en liste
+    anecdote_list = list(result)
+
+    # Vérifier si un document a été retourné
+    if anecdote_list:
+        anecdote = anecdote_list[0]
+
+        # Convertir `_id` en chaîne de caractères
+        anecdote["_id"] = str(anecdote["_id"])
+
+        return jsonify({"message": anecdote})  # Retourne un seul élément
+    else:
+        return jsonify({"message": "Aucune anecdote trouvée"}), 404
+
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
