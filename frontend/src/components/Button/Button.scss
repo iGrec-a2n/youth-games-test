@@ -1,0 +1,28 @@
+@import "../../../styles/varibales.scss";
+
+
+.button-wide {
+  outline: none;
+  border: 1px solid $russian-violet-2;
+  border-radius: 16px;
+  background: none;
+  min-width: 10rem;
+  padding: 10px 40px;
+  font-size: 1rem;
+  transition: all .3s ease;
+
+  &:hover {
+    background: $russian-violet;
+    color: $lavender-web;
+  }
+}
+
+.cta-orange {
+  background: $citrine;
+  border: none;
+
+  &:hover{
+    background: $jonquil;
+    color: $lavender-web;
+  }
+}

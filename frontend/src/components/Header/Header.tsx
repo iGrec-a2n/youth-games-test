@@ -9,10 +9,13 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ titlePage, descriptionPage, children }) => {
   return (
     <div className='header-container'>
-      <h3 className='header-description'>{descriptionPage}</h3>
-      <h1 className='header-title'>
-        {titlePage}
-      </h1>
+        <div className='header-wrapper'>
+
+        <h3 className='header-description'>{descriptionPage}</h3>
+        <h1 className='header-title'>
+          {titlePage}
+        </h1>
+      </div>
       {children}
     </div>
   )

@@ -4,6 +4,7 @@ import SignUp from './views/SignUp/SignUp';
 import Quiz from './Quizz/Quizz';
 import LoginPage from './views/SignIn/SignIn';
 import Home from './views/Home/Home';
+import GamePlay from './components/GamePlay/GamePlay';
 
 function App() {
   return (
@@ -18,6 +19,9 @@ function App() {
 
           {/* Route pour la page de quiz */}
           <Route path="/quiz" element={<Quiz />} />
+
+          {/* Route pour la page de quiz */}
+          <Route path="/gameplay" element={<GamePlay />} />
 
           {/* Page d'accueil ou route par défaut */}
           <Route path="/" element={<Home />} />
