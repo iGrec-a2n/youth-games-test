@@ -11,7 +11,6 @@ import random
 import string
 import time
 
-
 app = Flask(__name__)
 CORS(app, origins=['http://localhost:5173'])
 socketio = SocketIO(app, cors_allowed_origins="*", engineio_logger=True, async_mode='eventlet')
@@ -228,10 +227,11 @@ def handle_start_quiz(data):
 # La partie Le saviez vous
 from pymongo import MongoClient
 
-collection = db["Anedocte"]
+collection_Anedocte = db["Anedocte"]
+collection_Actualite = db["actualite"]
 @app.route('/api/anecdotes', methods=['GET'])
 def anecdotes():
-    result = collection.aggregate([{"$sample": {"size": 1}}])
+    result = collection_Anedocte.aggregate([{"$sample": {"size": 1}}])
 
     # Convertir le curseur en liste
     anecdote_list = list(result)
@@ -249,7 +249,21 @@ def anecdotes():
 
 @app.route('/api/actualite', methods=['GET'])
 def actualite():
-    return "voici toute l'actualite"
+    result = collection_Actualite.find()
+
+    # Convertir les documents en liste de dictionnaires et convertir `_id`
+    anecdote_list = [
+        {**anecdote, "_id": str(anecdote["_id"])} for anecdote in result
+    ]
+
+    # Vérifier si la collection contient des documents
+    if anecdote_list:
+        return jsonify({"result": anecdote_list}), 200
+    else:
+        return jsonify({"message": "Aucune actualité trouvée"}), 404
+
+
+
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
