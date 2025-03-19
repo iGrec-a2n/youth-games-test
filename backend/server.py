@@ -2,19 +2,24 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO, join_room, leave_room, emit
 from werkzeug.security import check_password_hash, generate_password_hash
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from bd import db
 from bson import ObjectId
 import random
 import string
 import eventlet
 import time
+from datetime import timedelta
+
 # For WebSocket connections to work well in local mode
 eventlet.monkey_patch()
 
 app = Flask(__name__)
 CORS(app, origins=['http://localhost:5173'])
 socketio = SocketIO(app, cors_allowed_origins="*", engineio_logger=True, async_mode='eventlet')
-
+app.config['JWT_SECRET_KEY'] = 'data'
+app.config["JWT_TOKEN_LOCATION"] = ["cookies"] 
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(seconds=3600)
 # Collection pour les rooms
 rooms = db["rooms"]
 
@@ -33,7 +38,6 @@ room_players = {}
 def generate_room_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
-# Route pour enregistrer un nouvel utilisateur
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -42,23 +46,31 @@ def register():
     username = data.get("username")
     email = data.get('email')
     password = data.get('password')
-    hashed_password = generate_password_hash(password)
     country = data.get('country')
 
-    if last_name and first_name and username and email and password and country:
-        users.insert_one({
-            "lastName": last_name,
-            "firstName": first_name,
-            "username": username,
-            "email": email,
-            "password": hashed_password,
-            "country": country
-        })
-        return jsonify({"message": "New user registered successfully"}), 200
-    else:
+    if not (last_name and first_name and username and email and password and country):
         return jsonify({"message": "Missing or incorrect data"}), 400
 
-# Route pour connecter un utilisateur
+    # Hacher le mot de passe
+    hashed_password = generate_password_hash(password).decode('utf-8')
+
+    # Vérifier si l'utilisateur existe déjà
+    if users.find_one({"email": email}):
+        return jsonify({"message": "User already exists"}), 400
+
+    # Insérer l'utilisateur
+    users.insert_one({
+        "lastName": last_name,
+        "firstName": first_name,
+        "username": username,
+        "email": email,
+        "password": hashed_password,
+        "country": country
+    })
+
+    return jsonify({"message": "New user registered successfully"}), 201
+
+# Route pour se connecter et obtenir un JWT
 @app.route('/api/login', methods=["POST"])
 def signIN():
     data = request.get_json()
@@ -69,10 +81,14 @@ def signIN():
 
     if existing_user and check_password_hash(existing_user["password"], password):
         user_id = str(existing_user["_id"])
-        return jsonify({"message": "Welcome", "user_id": user_id}), 200
-    else:
-        return jsonify({"message": "User not found"}), 400
 
+        # Générer un token JWT
+        access_token = create_access_token(identity=user_id, expires_delta=timedelta(seconds=3600))
+        response.set_cookie('access_token_cookie',access_token,max_age=3600)
+        return jsonify({"message": "Welcome", "access_token": res}), 200
+    else:
+        return jsonify({"message": "Invalid credentials"}), 401
+    
 # Route pour créer une room avec des questions
 @app.route('/api/create_room', methods=["POST"])
 def create_room():

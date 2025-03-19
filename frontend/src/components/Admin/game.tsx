@@ -70,8 +70,6 @@ const Quiz = () => {
   const Send_answer = (answer: string) => {
     socket.emit('receive_answer', {
       room_code: roomCode,
-      user_id: localStorage.getItem('user_id'),
-      player: localStorage.getItem('username'),
       question: questions[currentQuestion]._id,
       answer: answer 
     });
